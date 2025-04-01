@@ -1,4 +1,9 @@
 import { registerRootComponent } from 'expo';
+import 'react-native-get-random-values';
+import { v4 as uuidv4 } from 'uuid';
+
+// Agora pode usar normalmente
+const id = uuidv4();
 
 import App from './App';
 
