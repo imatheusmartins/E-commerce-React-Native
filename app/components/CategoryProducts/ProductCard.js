@@ -14,7 +14,7 @@ const ProductCard = ({ product }) => {
           />
         ) : (
           <View style={styles.placeholder}>
-            <Icon name="fastfood" size={30} color="#39FF14" />
+            <Icon name="fastfood" size={30} color="#F9AD3A" />
           </View>
         )}
       </View>
@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#39FF14',
+    color: '#F9AD3A',
   },
   discount: {
     fontSize: 12,
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 10,
     right: 10,
-    backgroundColor: '#39FF14',
+    backgroundColor: '#F9AD3A',
     width: 30,
     height: 30,
     borderRadius: 15,

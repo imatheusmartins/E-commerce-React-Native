@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     color: '#000'
   },
   imagePicker: {
-    backgroundColor: '#39FF14',
+    backgroundColor: '#F9AD3A',
     padding: 10,
     borderRadius: 5,
     alignItems: 'center',
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   button: {
-    backgroundColor: '#39FF14',
+    backgroundColor: '#F9AD3A',
     padding: 15,
     borderRadius: 5,
     alignItems: 'center',

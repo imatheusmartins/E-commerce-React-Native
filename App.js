@@ -8,6 +8,7 @@ import AddCategoryScreen from './app/screens/AddCategoryScreen';
 import AddProductScreen from './app/screens/AddProductScreen';
 import CategoryProducts from './app/screens/CategoryProducts';
 import SearchScreen from './app/screens/SearchScreen';
+import CartScreen from './app/screens/CartScreen';
 import { createTables } from './services/dbservice';
 
 const Stack = createStackNavigator();
@@ -87,6 +88,12 @@ const App = () => {
             component={CategoryProducts} 
             options={({ route }) => ({ title: route.params.categoryName })}
           />
+
+        <Stack.Screen 
+          name="CartScreen" 
+          component={CartScreen}
+          options={{ title: 'Meu Carrinho' }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -11,7 +11,7 @@ const Footer = ({ navigation }) => {
           style={styles.homeIconCircle}
           onPress={() => navigation.navigate('HomeScreen')}
         >
-          <MaterialCommunityIcons name="alpha-z" size={28} color="#FFF" />
+          <MaterialCommunityIcons name="star" size={20} color="#DB1921" />
         </TouchableOpacity>
         <Text style={[styles.iconText, { color: '#FFF' }]}>Home</Text>
       </View>
@@ -46,7 +46,7 @@ const Footer = ({ navigation }) => {
       {/* Ícone Carrinho */}
       <TouchableOpacity 
         style={styles.iconButton} 
-        onPress={() => navigation.navigate('Cart')}
+        onPress={() => navigation.navigate('CartScreen')}
       >
         <MaterialCommunityIcons name="cart-outline" size={24} color="#999" />
         <Text style={styles.iconText}>Carrinho</Text>
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#39FF14',
+    backgroundColor: '#F9AD3A',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 2,

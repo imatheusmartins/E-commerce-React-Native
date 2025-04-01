@@ -11,7 +11,7 @@ const Footer = ({ navigation }) => {
           style={styles.homeIconCircle}
           onPress={() => navigation.navigate('HomeScreen')}
         >
-          <MaterialCommunityIcons name="alpha-z" size={28} color="#FFF" />
+          <MaterialCommunityIcons name="star" size={20} color="#DB1921" />
         </TouchableOpacity>
         <Text style={[styles.iconText, { color: '#FFF' }]}>Home</Text>
       </View>
@@ -19,7 +19,7 @@ const Footer = ({ navigation }) => {
       {/* Ícone Busca */}
       <TouchableOpacity 
         style={styles.iconButton} 
-        onPress={() => navigation.navigate('Search')}
+        onPress={() => navigation.navigate('SearchScreen')}
       >
         <Ionicons name="search-outline" size={24} color="#999" />
         <Text style={styles.iconText}>Busca</Text>
@@ -46,7 +46,7 @@ const Footer = ({ navigation }) => {
       {/* Ícone Carrinho */}
       <TouchableOpacity 
         style={styles.iconButton} 
-        onPress={() => navigation.navigate('Cart')}
+        onPress={() => navigation.navigate('CartScreen')}
       >
         <MaterialCommunityIcons name="cart-outline" size={24} color="#999" />
         <Text style={styles.iconText}>Carrinho</Text>
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#39FF14',
+    backgroundColor: '#F9AD3A',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 2,
@@ -103,6 +103,12 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontWeight: '500',
     color: '#999'
+  },
+  actual_iconText: {
+    fontSize: 12,
+    marginTop: 4,
+    fontWeight: '500',
+    color: '#F9AD3A'
   },
 });
 

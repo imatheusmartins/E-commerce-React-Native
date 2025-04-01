@@ -1,27 +1,31 @@
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { View, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const Header = ({ navigation }) => {
   return (
     <View style={styles.headerContainer}>
-      {/* Título ou logo (opcional) */}
-      <Text style={styles.title}></Text>
+      {/* Imagem no canto esquerdo - tamanho ajustado */}
+      <Image 
+        source={require('../../../assets/logo.png')}
+        style={styles.logo}
+        resizeMode="contain"
+      />
       
       {/* Botões no canto direito */}
       <View style={styles.rightButtons}>
         <TouchableOpacity 
           style={styles.iconButton}
-          onPress={() => navigation.navigate('AddCategoryScreen')} // Substitua pela sua rota
+          onPress={() => navigation.navigate('AddCategoryScreen')}
         >
-          <MaterialCommunityIcons name="alpha-c-box" size={34} color="#39FF14" />
+          <MaterialCommunityIcons name="shape-plus" size={28} color="#F9AD3A" />
         </TouchableOpacity>
         
         <TouchableOpacity 
           style={styles.iconButton}
-          onPress={() => navigation.navigate('AddProductScreen')} // Substitua pela sua rota
+          onPress={() => navigation.navigate('AddProductScreen')}
         >
-          <MaterialCommunityIcons name="alpha-p-box" size={34} color="#39FF14" />
+          <MaterialCommunityIcons name="plus-box" size={28} color="#F9AD3A" />
         </TouchableOpacity>
       </View>
     </View>
@@ -38,22 +42,20 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#222',
     paddingHorizontal: 15,
-    paddingTop: 10,
     elevation: 5,
-    shadowColor: '#39FF14',
+    shadowColor: '#F9AD3A',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
   },
-  title: {
-    color: '#39FF14',
-    fontSize: 24,
-    fontWeight: 'bold',
-    letterSpacing: 1,
+  logo: {
+    width: 120,  // Largura reduzida
+    height: 40,  // Altura proporcional
+    marginLeft: 5,
   },
   rightButtons: {
     flexDirection: 'row',
-    gap: 2, // Espaço entre os ícones
+    gap: 10,
   },
   iconButton: {
     padding: 5,

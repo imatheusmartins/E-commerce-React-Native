@@ -191,7 +191,7 @@ const CadastroProdutoScreen = ({ navigation }) => {
           <CheckBox
             isChecked={produto.em_promocao}
             onClick={() => setProduto({...produto, em_promocao: !produto.em_promocao})}
-            checkBoxColor="#39FF14"
+            checkBoxColor="#F9AD3A"
           />
           <Text style={styles.checkboxLabel}>Produto em promoção?</Text>
         </View>
@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
   titulo: { 
     fontSize: 22, 
     fontWeight: 'bold', 
-    color: '#39FF14', 
+    color: '#F9AD3A', 
     marginBottom: 20, 
     textAlign: 'center' 
   },
@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   uploadButton: { 
-    backgroundColor: '#39FF14', 
+    backgroundColor: '#F9AD3A', 
     padding: 15, 
     borderRadius: 8, 
     alignItems: 'center',
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#333',
   },
   saveButton: { 
-    backgroundColor: '#39FF14', 
+    backgroundColor: '#F9AD3A', 
     padding: 16, 
     borderRadius: 8, 
     alignItems: 'center',

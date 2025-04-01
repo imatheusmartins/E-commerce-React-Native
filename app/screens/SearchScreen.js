@@ -46,7 +46,7 @@ const SearchScreen = ({ navigation }) => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#39FF14" />
+        <ActivityIndicator size="large" color="#F9AD3A" />
       </View>
     );
   }
