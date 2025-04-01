@@ -23,7 +23,7 @@ const HomeScreen = ({ navigation }) => { // Recebe navigation do Stack.Navigator
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1C1C1C',
+    backgroundColor: '#121212',
   },
   contentWrapper: {
     flex: 1,

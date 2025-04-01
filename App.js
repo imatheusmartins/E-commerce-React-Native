@@ -13,6 +13,7 @@ import { createTables } from './services/dbservice';
 import ProductDetail from './app/components/Produto/ProductDetail';
 import HomeContent from './app/components/Home/HomeContent';
 import ProductDetailScreen from './app/screens/ProductDetailScreen';
+import SalesScreen from './app/screens/SalesScreen';
 
 const Stack = createStackNavigator();
 
@@ -47,9 +48,9 @@ const App = () => {
         initialRouteName="HomeScreen"
         screenOptions={{
           headerStyle: {
-            backgroundColor: '#1C1C1C', // COR DE FUNDO
+            backgroundColor: '#121212', // COR DE FUNDO
           },
-          headerTintColor: '#1C1C1C', // COR DO TÍTULO/BOTÕES
+          headerTintColor: '#121212', // COR DO TÍTULO/BOTÕES
           headerTitleStyle: {
             fontWeight: 'bold',
             fontSize: 20,
@@ -106,16 +107,25 @@ const App = () => {
             headerBackTitle: 'Voltar', // TEXTO DO BOTÃO VOLTAR
           }}
         />
+
         <Stack.Screen
           name="CategoryProducts"
           component={CategoryProducts}
           options={({ route }) => ({ title: route.params.categoryName })}
         />
+
         <Stack.Screen
           name="CartScreen"
           component={CartScreen}
           options={{ title: 'Meu Carrinho' }}
         />
+
+        <Stack.Screen 
+            name="SalesScreen" 
+            component={SalesScreen} 
+            options={{ title: 'Histórico de Vendas' }}
+        />
+
       </Stack.Navigator>
     </NavigationContainer>
   );

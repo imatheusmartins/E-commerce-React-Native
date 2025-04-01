@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ActivityIndicator, Text } from 'react-native';
 import SearchHeader from '../components/Search/Header';
 import SearchContent from '../components/Search/SearchContent';
 import { obtemTodasCategorias } from '../../services/dbservice';
@@ -75,19 +75,19 @@ const SearchScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1C1C1C',
+    backgroundColor: '#121212',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1C1C1C',
+    backgroundColor: '#121212',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1C1C1C',
+    backgroundColor: '#121212',
     padding: 20,
   },
   errorText: {

@@ -3,7 +3,7 @@ import * as SQLite from 'expo-sqlite';
 // Conexão melhorada com tratamento de erro
 export async function getDbConnection() {
     try {
-        const db = await SQLite.openDatabaseAsync('dbTeste1.db');
+        const db = await SQLite.openDatabaseAsync('dbTeste2.db');
         return db;
     } catch (error) {
         console.error("Erro ao conectar ao banco de dados:", error);
@@ -15,7 +15,6 @@ export async function createTables() {
     const cx = await getDbConnection();
 
     try {
-        // Criar tabela de categorias
         await cx.execAsync(`
             CREATE TABLE IF NOT EXISTS tblCategorias (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,12 +23,6 @@ export async function createTables() {
             );
         `);
 
-        // Criar índice para categorias
-        await cx.execAsync(`
-            CREATE INDEX IF NOT EXISTS idx_categorias_nome ON tblCategorias(nome);
-        `);
-
-        // Criar tabela de produtos
         await cx.execAsync(`
             CREATE TABLE IF NOT EXISTS tblProdutos (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -47,16 +40,51 @@ export async function createTables() {
             );
         `);
 
-        // Criar índices para produtos
         await cx.execAsync(`
-            CREATE INDEX IF NOT EXISTS idx_produtos_categoria ON tblProdutos(categoria_id);
+            CREATE TABLE IF NOT EXISTS tblPedido (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                status TEXT DEFAULT 'aberto', -- 'aberto', 'finalizado', 'cancelado'
+                valor_total REAL DEFAULT 0
+            );
         `);
 
         await cx.execAsync(`
-            CREATE INDEX IF NOT EXISTS idx_produtos_promocao ON tblProdutos(em_promocao);
+            CREATE TABLE IF NOT EXISTS tblItemPedido (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id_pedido INTEGER NOT NULL,
+                id_produto INTEGER NOT NULL,
+                quantidade INTEGER NOT NULL,
+                valor_unitario REAL NOT NULL,
+                valor_total REAL NOT NULL,
+                FOREIGN KEY (id_pedido) REFERENCES tblPedido(id),
+                FOREIGN KEY (id_produto) REFERENCES tblProdutos(id)
+            );
         `);
 
-        console.log("Tabelas criadas com sucesso!");
+        await cx.execAsync(`
+            CREATE TABLE IF NOT EXISTS tblVenda (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id_pedido INTEGER NOT NULL,
+                data_venda TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                valor_total REAL NOT NULL,
+                FOREIGN KEY (id_pedido) REFERENCES tblPedido(id)
+            );
+        `);
+
+        await cx.execAsync(`
+            CREATE INDEX IF NOT EXISTS idx_item_pedido_pedido ON tblItemPedido(id_pedido);
+        `);
+        
+        await cx.execAsync(`
+            CREATE INDEX IF NOT EXISTS idx_item_pedido_produto ON tblItemPedido(id_produto);
+        `);
+        
+        await cx.execAsync(`
+            CREATE INDEX IF NOT EXISTS idx_venda_pedido ON tblVenda(id_pedido);
+        `);
+
+        console.log("Todas as tabelas criadas com sucesso!");
     } catch (error) {
         console.error("Erro ao criar tabelas:", error);
         throw error;
@@ -67,21 +95,26 @@ export async function createTables() {
 
 export async function getProductById(productId) {
     const db = await getDbConnection();
-
     try {
         const results = await db.getFirstAsync(
             `SELECT * FROM tblProdutos WHERE id = ?;`,
             [productId]
         );
 
-        return results; // Retorna o objeto do produto
+        if (!results) {
+            throw new Error("Produto não encontrado");
+        }
+
+        return {
+            ...results,
+            em_promocao: Boolean(results.em_promocao)
+        };
     } catch (error) {
         console.error("Erro ao buscar o produto:", error);
         throw error;
-    } finally {
-        await db.closeAsync();
     }
 }
+
 
 export async function obtemTodosProdutos(limit = 50, offset = 0) {
     let dbProd = null;
@@ -472,5 +505,325 @@ export async function excluiTodasCategorias() {
         throw error;
     } finally {
         if (dbCx) await dbCx.closeAsync();
+    }
+}
+
+export async function criarPedido() {
+    const db = await getDbConnection();
+    try {
+        const result = await db.runAsync(
+            'INSERT INTO tblPedido DEFAULT VALUES'
+        );
+        return result.lastInsertRowId;
+    } catch (error) {
+        console.error("Erro ao criar pedido:", error);
+        throw error;
+    }
+}
+
+export async function adicionarItemAoPedido(idPedido, idProduto, quantidade) {
+    const db = await getDbConnection();
+    try {
+        // Primeiro obtemos o preço do produto
+        const produto = await db.getFirstAsync(
+            'SELECT preco FROM tblProdutos WHERE id = ?',
+            [idProduto]
+        );
+        
+        if (!produto) {
+            throw new Error("Produto não encontrado");
+        }
+        
+        const valorUnitario = produto.preco;
+        const valorTotal = valorUnitario * quantidade;
+        
+        // Inserimos o item no pedido
+        const result = await db.runAsync(
+            `INSERT INTO tblItemPedido 
+             (id_pedido, id_produto, quantidade, valor_unitario, valor_total)
+             VALUES (?, ?, ?, ?, ?)`,
+            [idPedido, idProduto, quantidade, valorUnitario, valorTotal]
+        );
+        
+        // Atualizamos o valor total do pedido
+        await atualizarTotalPedido(idPedido);
+        
+        return result.lastInsertRowId;
+    } catch (error) {
+        console.error("Erro ao adicionar item ao pedido:", error);
+        throw error;
+    }
+}
+
+async function atualizarTotalPedido(idPedido) {
+    let db = null;
+    try {
+        db = await getDbConnection();
+        
+        // Calcula o novo total
+        const { total } = await db.getFirstAsync(
+            'SELECT SUM(valor_total) as total FROM tblItemPedido WHERE id_pedido = ?',
+            [idPedido]
+        );
+        
+        // Atualiza o pedido
+        await db.runAsync(
+            'UPDATE tblPedido SET valor_total = ? WHERE id = ?',
+            [total || 0, idPedido]
+        );
+    } catch (error) {
+        console.error("Erro ao atualizar total do pedido:", error);
+        throw error;
+    } finally {
+        if (db) await db.closeAsync();
+    }
+}
+
+export async function removerItemDoPedido(idItemPedido) {
+    const db = await getDbConnection();
+    try {
+        const item = await db.getFirstAsync(
+            'SELECT id_pedido FROM tblItemPedido WHERE id = ?',
+            [idItemPedido]
+        );
+        
+        if (!item) {
+            throw new Error("Item do pedido não encontrado");
+        }
+        
+        await db.runAsync(
+            'DELETE FROM tblItemPedido WHERE id = ?',
+            [idItemPedido]
+        );
+        
+        await atualizarTotalPedido(item.id_pedido);
+        
+        return true;
+    } catch (error) {
+        console.error("Erro ao remover item do pedido:", error);
+        throw error;
+    }
+}
+
+export async function obterItensDoPedido(idPedido) {
+    let db = null;
+    try {
+        db = await getDbConnection();
+        
+        const itens = await db.getAllAsync(
+            `SELECT ip.*, p.nome, p.imagem 
+             FROM tblItemPedido ip
+             JOIN tblProdutos p ON ip.id_produto = p.id
+             WHERE ip.id_pedido = ?`,
+            [idPedido]
+        );
+        
+        return itens.map(item => ({
+            ...item,
+            em_promocao: Boolean(item.em_promocao)
+        }));
+    } catch (error) {
+        console.error("Erro ao obter itens do pedido:", error);
+        throw error;
+    } finally {
+        if (db) await db.closeAsync();
+    }
+}
+
+export async function finalizarPedido(idPedido) {
+    let db = null;
+    try {
+        db = await getDbConnection();
+        await db.execAsync('BEGIN TRANSACTION');
+        
+        // Verifica se o pedido existe e está aberto
+        const pedido = await db.getFirstAsync(
+            'SELECT * FROM tblPedido WHERE id = ? AND status = "aberto"',
+            [idPedido]
+        );
+        
+        if (!pedido) {
+            throw new Error("Pedido não encontrado ou já finalizado");
+        }
+        
+        // Obtém os itens do pedido
+        const itens = await db.getAllAsync(
+            'SELECT * FROM tblItemPedido WHERE id_pedido = ?',
+            [idPedido]
+        );
+        
+        // Atualiza o estoque e contador de vendas dos produtos
+        for (const item of itens) {
+            await db.runAsync(
+                `UPDATE tblProdutos 
+                 SET estoque = estoque - ?, 
+                     qtd_vendidos = qtd_vendidos + ?
+                 WHERE id = ?`,
+                [item.quantidade, item.quantidade, item.id_produto]
+            );
+        }
+        
+        // Marca o pedido como finalizado
+        await db.runAsync(
+            'UPDATE tblPedido SET status = "finalizado" WHERE id = ?',
+            [idPedido]
+        );
+        
+        // Cria registro na tabela de vendas
+        await db.runAsync(
+            'INSERT INTO tblVenda (id_pedido, valor_total) VALUES (?, ?)',
+            [idPedido, pedido.valor_total]
+        );
+        
+        await db.execAsync('COMMIT');
+        return true;
+    } catch (error) {
+        if (db) await db.execAsync('ROLLBACK');
+        console.error("Erro ao finalizar pedido:", error);
+        throw error;
+    } finally {
+        if (db) await db.closeAsync();
+    }
+}
+
+export async function cancelarPedido(idPedido) {
+    let db = null;
+    try {
+        db = await getDbConnection();
+        
+        await db.runAsync(
+            'UPDATE tblPedido SET status = "cancelado" WHERE id = ?',
+            [idPedido]
+        );
+        
+        return true;
+    } catch (error) {
+        console.error("Erro ao cancelar pedido:", error);
+        throw error;
+    } finally {
+        if (db) await db.closeAsync();
+    }
+}
+
+export async function obterPedido(idPedido) {
+    const db = await getDbConnection();
+    try {
+      const pedido = await db.getFirstAsync(
+        'SELECT * FROM tblPedido WHERE id = ?',
+        [idPedido]
+      );
+      
+      if (!pedido) {
+        return null;
+      }
+  
+      const itens = await db.getAllAsync(
+        `SELECT ip.*, p.nome, p.imagem 
+         FROM tblItemPedido ip
+         JOIN tblProdutos p ON ip.id_produto = p.id
+         WHERE ip.id_pedido = ?`,
+        [idPedido]
+      );
+  
+      return {
+        ...pedido,
+        itens: itens.map(item => ({
+          ...item,
+          em_promocao: Boolean(item.em_promocao)
+        }))
+      };
+    } catch (error) {
+      console.error("Erro ao obter pedido:", error);
+      throw error;
+    } finally {
+      if (db && db.isOpen) {
+        await db.closeAsync().catch(e => console.warn("Erro ao fechar conexão:", e));
+      }
+    }
+}
+
+export async function atualizarItemPedido(itemId, novaQuantidade) {
+    const db = await getDbConnection();
+    try {
+        const item = await db.getFirstAsync(
+            'SELECT * FROM tblItemPedido WHERE id = ?',
+            [itemId]
+        );
+        
+        if (!item) {
+            throw new Error("Item do pedido não encontrado");
+        }
+        
+        const novoTotal = item.valor_unitario * novaQuantidade;
+        
+        await db.runAsync(
+            'UPDATE tblItemPedido SET quantidade = ?, valor_total = ? WHERE id = ?',
+            [novaQuantidade, novoTotal, itemId]
+        );
+        
+        await atualizarTotalPedido(item.id_pedido);
+        
+        return true;
+    } catch (error) {
+        console.error("Erro ao atualizar item do pedido:", error);
+        throw error;
+    }
+}
+
+export async function obterPedidoAtivo() {
+    const db = await getDbConnection();
+    try {
+      const pedido = await db.getFirstAsync(
+        'SELECT * FROM tblPedido WHERE status = "aberto" ORDER BY id DESC LIMIT 1'
+      );
+      
+      if (!pedido) {
+        return null;
+      }
+  
+      const itens = await db.getAllAsync(
+        `SELECT ip.*, p.nome, p.imagem 
+         FROM tblItemPedido ip
+         JOIN tblProdutos p ON ip.id_produto = p.id
+         WHERE ip.id_pedido = ?`,
+        [pedido.id]
+      );
+  
+      return {
+        ...pedido,
+        itens: itens.map(item => ({
+          ...item,
+          em_promocao: Boolean(item.em_promocao)
+        }))
+      };
+    } catch (error) {
+      console.error("Erro ao obter pedido ativo:", error);
+      throw error;
+    } finally {
+      if (db && db.isOpen) {
+        await db.closeAsync().catch(e => console.warn("Erro ao fechar conexão:", e));
+      }
+    }
+}
+
+export async function getAllVendas() {
+    const db = await getDbConnection();
+    try {
+        const vendas = await db.getAllAsync(`
+            SELECT v.*, COUNT(ip.id) as total_itens
+            FROM tblVenda v
+            LEFT JOIN tblPedido p ON v.id_pedido = p.id
+            LEFT JOIN tblItemPedido ip ON p.id = ip.id_pedido
+            GROUP BY v.id
+            ORDER BY v.data_venda DESC
+        `);
+        
+        return vendas.map(venda => ({
+            ...venda,
+            valor_total: parseFloat(venda.valor_total),
+        }));
+    } catch (error) {
+        console.error("Erro ao obter vendas:", error);
+        throw error;
     }
 }

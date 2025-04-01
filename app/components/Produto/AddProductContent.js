@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
     padding: 20,
-    backgroundColor: '#1C1C1C',
+    backgroundColor: '#121212',
     paddingBottom: 40
   },
   titulo: { 

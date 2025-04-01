@@ -22,7 +22,7 @@ const SearchHeader = ({ onSearch }) => {
 const styles = StyleSheet.create({
   container: {
     padding: 15,
-    backgroundColor: '#1C1C1C',
+    backgroundColor: '#121212',
     borderBottomWidth: 1,
     borderBottomColor: '#EEE',
   },

@@ -1,84 +1,96 @@
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Text, Platform } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
 
 const Footer = ({ navigation }) => {
   return (
-    <View style={styles.footerContainer}>
-      {/* Ícone Home com círculo destacado */}
-      <View style={styles.homeIconWrapper}>
-        <TouchableOpacity 
-          style={styles.homeIconCircle}
-          onPress={() => navigation.navigate('HomeScreen')}
-        >
-          <MaterialCommunityIcons name="star" size={20} color="#DB1921" />
-        </TouchableOpacity>
-        <Text style={[styles.iconText, { color: '#FFF' }]}>Home</Text>
-      </View>
-
-      {/* Ícone Busca */}
-      <TouchableOpacity 
-        style={styles.iconButton} 
-        onPress={() => navigation.navigate('SearchScreen')}
+    <View style={styles.container}>
+      {/* Efeito de vidro */}
+      <BlurView 
+        intensity={Platform.OS === 'ios' ? 25 : 70} 
+        tint="dark"
+        style={styles.blurView}
       >
-        <Ionicons name="search-outline" size={24} color="#999" />
-        <Text style={styles.iconText}>Busca</Text>
-      </TouchableOpacity>
+        <View style={styles.footerContent}>
+          {/* Ícone Home */}
+          <View style={styles.homeIconWrapper}>
+            <TouchableOpacity 
+              style={styles.homeIconCircle}
+              onPress={() => navigation.navigate('HomeScreen')}
+            >
+              <MaterialCommunityIcons name="star" size={20} color="#DB1921" />
+            </TouchableOpacity>
+            <Text style={[styles.iconText, { color: '#FFF' }]}>Home</Text>
+          </View>
 
-      {/* Ícone Marcas */}
-      <TouchableOpacity 
-        style={styles.iconButton} 
-        onPress={() => navigation.navigate('Brands')}
-      >
-        <Ionicons name="sparkles-outline" size={24} color="#999" />
-        <Text style={styles.iconText}>Marcas</Text>
-      </TouchableOpacity>
+          {/* Ícone Busca */}
+          <TouchableOpacity 
+            style={styles.iconButton} 
+            onPress={() => navigation.navigate('SearchScreen')}
+          >
+            <Ionicons name="search-outline" size={24} color="#999" />
+            <Text style={styles.iconText}>Busca</Text>
+          </TouchableOpacity>
 
-      {/* Ícone Ofertas */}
-      <TouchableOpacity 
-        style={styles.iconButton} 
-        onPress={() => navigation.navigate('Offers')}
-      >
-        <MaterialCommunityIcons name="sale" size={24} color="#999" />
-        <Text style={styles.iconText}>Ofertas</Text>
-      </TouchableOpacity>
+          {/* Ícone Vendas */}
+          <TouchableOpacity 
+            style={styles.iconButton} 
+            onPress={() => navigation.navigate('SalesScreen')}
+          >
+            <Ionicons name="sparkles-outline" size={24} color="#999" />
+            <Text style={styles.iconText}>Vendas</Text>
+          </TouchableOpacity>
 
-      {/* Ícone Carrinho */}
-      <TouchableOpacity 
-        style={styles.iconButton} 
-        onPress={() => navigation.navigate('CartScreen')}
-      >
-        <MaterialCommunityIcons name="cart-outline" size={24} color="#999" />
-        <Text style={styles.iconText}>Carrinho</Text>
-      </TouchableOpacity>
+          {/* Ícone Ofertas */}
+          <TouchableOpacity 
+            style={styles.iconButton} 
+            onPress={() => navigation.navigate('Offers')}
+          >
+            <MaterialCommunityIcons name="sale" size={24} color="#999" />
+            <Text style={styles.iconText}>Ofertas</Text>
+          </TouchableOpacity>
+
+          {/* Ícone Carrinho */}
+          <TouchableOpacity 
+            style={styles.iconButton} 
+            onPress={() => navigation.navigate('CartScreen')}
+          >
+            <MaterialCommunityIcons name="cart-outline" size={24} color="#999" />
+            <Text style={styles.iconText}>Carrinho</Text>
+          </TouchableOpacity>
+        </View>
+      </BlurView>
     </View>
   );
 };
 
-// Mantenha os mesmos estilos que você já tinha
 const styles = StyleSheet.create({
-  footerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'flex-end',
-    height: 70,
-    backgroundColor: '#000',
-    borderTopWidth: 1,
-    borderTopColor: '#222',
-    paddingHorizontal: 5,
+  container: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    elevation: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
+    height: Platform.OS === 'ios' ? 85 : 80,
+    backgroundColor: 'transparent',
+  },
+  blurView: {
+    flex: 1,
+    backgroundColor: Platform.OS === 'android' ? 'rgba(0, 0, 0, 0.7)' : 'transparent',
+    borderTopWidth: 0.5,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  footerContent: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'flex-end',
+    paddingHorizontal: 5,
+    paddingTop: 10,
   },
   homeIconWrapper: {
     alignItems: 'center',
-    marginBottom: 9
+    marginBottom: Platform.OS === 'ios' ? 12 : 9,
   },
   homeIconCircle: {
     width: 56,
@@ -89,8 +101,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 2,
     borderWidth: 4,
-    borderColor: '#000',
-    elevation: 10
+    borderColor: 'rgba(0, 0, 0, 0.3)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
   },
   iconButton: {
     alignItems: 'center',

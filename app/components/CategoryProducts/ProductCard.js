@@ -38,7 +38,7 @@ const ProductCard = ({ product }) => {
 const styles = StyleSheet.create({
   container: {
     width: '48%',
-    backgroundColor: '#FFF',
+    backgroundColor: '#2a2a2a',
     borderRadius: 10,
     marginBottom: 15,
     padding: 10,

@@ -30,7 +30,7 @@ const SearchContent = ({ categories, onCategoryPress }) => {
 const styles = StyleSheet.create({
   container: {
     padding: 10,
-    backgroundColor: '#1C1C1C'
+    backgroundColor: '#121212'
   },
   columnWrapper: {
     justifyContent: 'space-between',

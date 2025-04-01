@@ -17,6 +17,7 @@
     "@react-navigation/stack": "^7.2.3",
     "@types/react-native-snap-carousel": "^3.8.11",
     "expo": "~52.0.41",
+    "expo-blur": "^14.0.3",
     "expo-crypto": "^14.0.2",
     "expo-image-picker": "^16.0.6",
     "expo-sqlite": "~15.1.3",

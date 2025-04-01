@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ActivityIndicator, Text } from 'react-native';
 import Header from '../components/CategoryProducts/Header'
 import ProductList from '../components/CategoryProducts/ProductList'
 import Footer from '../components/CategoryProducts/Footer'
@@ -58,19 +58,19 @@ const CategoryProducts = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: '#121212',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1C1C1C',
+    backgroundColor: '#121212',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1C1C1C',
+    backgroundColor: '#121212',
     padding: 20,
   },
   errorText: {

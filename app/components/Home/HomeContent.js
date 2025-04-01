@@ -155,7 +155,7 @@ const HomeContent = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1C1C1C',
+    backgroundColor: '#121212',
   },
   loadingContainer: {
     flex: 1,
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   carouselItem: {
-    backgroundColor: '#f8f8f8',
+    backgroundColor: '#2a2a2a',
     borderRadius: 10,
     padding: 15,
     alignItems: 'center',
@@ -193,17 +193,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     textAlign: 'center',
+    color:"#fff"
   },
   carouselPrice: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#2a9d8f',
+    color: '#faad3b',
     marginTop: 5,
   },
   productItem: {
     flex: 1,
     margin: 5,
-    backgroundColor: '#f8f8f8',
+    backgroundColor: '#2a2a2a',
     borderRadius: 8,
     padding: 10,
     alignItems: 'center',
@@ -219,11 +220,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     textAlign: 'center',
+    color:'#fff'
   },
   productPrice: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#2a9d8f',
+    color: '#faad3b',
     marginTop: 5,
   },
   row: {
@@ -244,7 +246,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   paginationDotActive: {
-    backgroundColor: '#2a9d8f',
+    backgroundColor: '#faad3b',
     width: 12,
   },
 });
