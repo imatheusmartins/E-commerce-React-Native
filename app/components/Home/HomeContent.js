@@ -1,45 +1,48 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, Dimensions, ScrollView, Animated } from 'react-native';
+import { View, Text, FlatList, Image, StyleSheet, Dimensions, ScrollView, Animated, TouchableOpacity } from 'react-native';
 import { obtemProdutosLancamento, obtemProdutosMaisVendidos } from '../../../services/dbservice';
+import { useNavigation } from '@react-navigation/native';
 
 const { width: screenWidth } = Dimensions.get('window');
 
 const HomeContent = () => {
-    const [lancamentos, setLancamentos] = useState([]);
-    const [maisVendidos, setMaisVendidos] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const scrollX = useRef(new Animated.Value(0)).current;
-  
-    useEffect(() => {
-      let isMounted = true;
-      
-      const fetchData = async () => {
-        try {
-          // Chamadas separadas para evitar conflito de fechamento de conexão
-          const lancamentosData = await obtemProdutosLancamento();
-          const maisVendidosData = await obtemProdutosMaisVendidos();
-          
-          if (isMounted) {
-            setLancamentos(lancamentosData);
-            setMaisVendidos(maisVendidosData);
-            console.log('Dados Carregados')
-          }
-        } catch (error) {
-          console.error("Erro ao carregar dados:", error);
-        } finally {
-          if (isMounted) {
-            setLoading(false);
-          }
+  const [lancamentos, setLancamentos] = useState([]);
+  const [maisVendidos, setMaisVendidos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const scrollX = useRef(new Animated.Value(0)).current;
+
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchData = async () => {
+      try {
+        // Chamadas separadas para evitar conflito de fechamento de conexão
+        const lancamentosData = await obtemProdutosLancamento();
+        const maisVendidosData = await obtemProdutosMaisVendidos();
+
+        if (isMounted) {
+          setLancamentos(lancamentosData);
+          setMaisVendidos(maisVendidosData);
+          console.log('Dados Carregados')
         }
-      };
-  
-      fetchData();
-  
-      return () => {
-        isMounted = false;
-      };
-    }, []);
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const renderCarouselItem = ({ item, index }) => {
     const inputRange = [
@@ -55,11 +58,16 @@ const HomeContent = () => {
     });
 
     return (
-      <Animated.View style={[styles.carouselItem, { transform: [{ scale }] }]}>
-        <Image source={{ uri: item.imagem }} style={styles.carouselImage} />
-        <Text style={styles.carouselTitle}>{item.nome}</Text>
-        <Text style={styles.carouselPrice}>R$ {item.preco.toFixed(2)}</Text>
-      </Animated.View>
+      <TouchableOpacity
+        onPress={() => navigation.navigate('ProductDetailScreen', { productId: item.id })}>
+
+        <Animated.View style={[styles.carouselItem, { transform: [{ scale }] }]}>
+          <Image source={{ uri: item.imagem }} style={styles.carouselImage} />
+          <Text style={styles.carouselTitle}>{item.nome}</Text>
+          <Text style={styles.carouselPrice}>R$ {item.preco.toFixed(2)}</Text>
+        </Animated.View>
+
+      </TouchableOpacity>
     );
   };
 
@@ -163,7 +171,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 15,
     paddingLeft: 10,
-    color:'#fff'
+    color: '#fff'
   },
   carouselContainer: {
     paddingHorizontal: 10,

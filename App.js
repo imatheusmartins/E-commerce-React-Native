@@ -9,6 +9,9 @@ import AddProductScreen from './app/screens/AddProductScreen';
 import CategoryProducts from './app/screens/CategoryProducts';
 import SearchScreen from './app/screens/SearchScreen';
 import { createTables } from './services/dbservice';
+import ProductDetail from './app/components/Produto/ProductDetail';
+import HomeContent from './app/components/Home/HomeContent';
+import ProductDetailScreen from './app/screens/ProductDetailScreen';
 
 const Stack = createStackNavigator();
 
@@ -53,40 +56,60 @@ const App = () => {
           headerTitleAlign: 'center', // ALINHAMENTO DO TÍTULO
         }}
       >
-        <Stack.Screen 
-          name="HomeScreen" 
-          component={HomeScreen} 
+        <Stack.Screen
+          name="HomeScreen"
+          component={HomeScreen}
         />
-        <Stack.Screen 
-          name="AddCategoryScreen" 
-          component={AddCategoryScreen} 
-          options={{ 
+        <Stack.Screen
+          name="HomeContent"
+          component={HomeContent}
+        />
+        <Stack.Screen
+          name="AddCategoryScreen"
+          component={AddCategoryScreen}
+          options={{
             title: 'Nova Categoria', // TÍTULO PERSONALIZADO
             headerBackTitle: 'Voltar', // TEXTO DO BOTÃO VOLTAR
           }}
-         />
-         <Stack.Screen 
-          name="AddProductScreen" 
-          component={AddProductScreen} 
-          options={{ 
+        />
+        <Stack.Screen
+          name="AddProductScreen"
+          component={AddProductScreen}
+          options={{
             title: 'Novo Produto', // TÍTULO PERSONALIZADO
             headerBackTitle: 'Voltar', // TEXTO DO BOTÃO VOLTAR
           }}
-          />
+        />
 
-          <Stack.Screen 
-          name="SearchScreen" 
-          component={SearchScreen} 
-          options={{ 
+        <Stack.Screen
+          name="SearchScreen"
+          component={SearchScreen}
+          options={{
             title: 'Categorias', // TÍTULO PERSONALIZADO
             headerBackTitle: 'Voltar', // TEXTO DO BOTÃO VOLTAR
           }}
         />
-        <Stack.Screen 
-            name="CategoryProducts" 
-            component={CategoryProducts} 
-            options={({ route }) => ({ title: route.params.categoryName })}
-          />
+        <Stack.Screen
+          name="ProductDetail"
+          component={ProductDetail}
+          options={{
+            title: 'Detalhes do produto', // TÍTULO PERSONALIZADO
+            headerBackTitle: 'Voltar', // TEXTO DO BOTÃO VOLTAR
+          }}
+        />
+        <Stack.Screen
+          name="ProductDetailScreen"
+          component={ProductDetailScreen}
+          options={{
+            title: 'Detalhes do produto', // TÍTULO PERSONALIZADO
+            headerBackTitle: 'Voltar', // TEXTO DO BOTÃO VOLTAR
+          }}
+        />
+        <Stack.Screen
+          name="CategoryProducts"
+          component={CategoryProducts}
+          options={({ route }) => ({ title: route.params.categoryName })}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

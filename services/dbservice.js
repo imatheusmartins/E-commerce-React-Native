@@ -65,6 +65,24 @@ export async function createTables() {
     }
 }
 
+export async function getProductById(productId) {
+    const db = await getDbConnection();
+
+    try {
+        const results = await db.getFirstAsync(
+            `SELECT * FROM tblProdutos WHERE id = ?;`,
+            [productId]
+        );
+
+        return results; // Retorna o objeto do produto
+    } catch (error) {
+        console.error("Erro ao buscar o produto:", error);
+        throw error;
+    } finally {
+        await db.closeAsync();
+    }
+}
+
 export async function obtemTodosProdutos(limit = 50, offset = 0) {
     let dbProd = null;
     try {
@@ -142,7 +160,7 @@ export async function adicionaProduto(produto) {
             produto.em_promocao ? 1 : 0,
             produto.categoria_id || null
         ]);
-        
+
         return result.lastInsertRowId;
     } catch (error) {
         console.error("Erro ao adicionar produto:", error);
@@ -183,7 +201,7 @@ export async function alteraProduto(produto) {
     try {
         dbProd = await getDbConnection();
         await dbProd.execAsync('BEGIN TRANSACTION');
-        
+
         const result = await dbProd.runAsync(`
             UPDATE tblProdutos SET
                 nome = ?,
@@ -256,12 +274,12 @@ export async function excluiCategoria(idCategoria) {
     try {
         dbProd = await getDbConnection();
         await dbProd.execAsync('BEGIN TRANSACTION');
-        
+
         await dbProd.runAsync(
             'DELETE FROM tblProdutos WHERE categoria_id = ?',
             [idCategoria]
         );
-        
+
         const result = await dbProd.runAsync(
             'DELETE FROM tblCategorias WHERE id = ?',
             [idCategoria]
@@ -302,21 +320,21 @@ export async function excluiProduto(id) {
 // Métodos específicos otimizados
 export async function obtemProdutosDaCategoria(categoriaId) {
     try {
-      const db = await getDbConnection();
-      const produtos = await db.getAllAsync(
-        `SELECT * FROM tblProdutos WHERE categoria_id = ?`,
-        [categoriaId]
-      );
-      
-      return produtos.map(produto => ({
-        ...produto,
-        em_promocao: Boolean(produto.em_promocao)
-      }));
+        const db = await getDbConnection();
+        const produtos = await db.getAllAsync(
+            `SELECT * FROM tblProdutos WHERE categoria_id = ?`,
+            [categoriaId]
+        );
+
+        return produtos.map(produto => ({
+            ...produto,
+            em_promocao: Boolean(produto.em_promocao)
+        }));
     } catch (error) {
-      console.error("Erro ao buscar produtos:", error);
-      throw error;
+        console.error("Erro ao buscar produtos:", error);
+        throw error;
     }
-  }
+}
 
 export async function obtemTodosProdutosEmPromocao(limit = 20) {
     let dbProd = null;
