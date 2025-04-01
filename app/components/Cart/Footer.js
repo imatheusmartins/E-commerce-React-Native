@@ -21,7 +21,7 @@ const Footer = ({ navigation }) => {
         style={styles.iconButton} 
         onPress={() => navigation.navigate('SearchScreen')}
       >
-        <Ionicons name="search-outline" size={24} color="#F9AD3A" />
+        <Ionicons name="search-outline" size={24} color="#999" />
         <Text style={styles.iconText}>Busca</Text>
       </TouchableOpacity>
 
@@ -48,7 +48,7 @@ const Footer = ({ navigation }) => {
         style={styles.iconButton} 
         onPress={() => navigation.navigate('CartScreen')}
       >
-        <MaterialCommunityIcons name="cart-outline" size={24} color="#999" />
+        <MaterialCommunityIcons name="cart-outline" size={24} color="#F9AD3A" />
         <Text style={styles.iconText}>Carrinho</Text>
       </TouchableOpacity>
     </View>
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontWeight: '500',
     color: '#F9AD3A'
-  }
+  },
 });
 
 export default Footer;

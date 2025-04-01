@@ -9,7 +9,7 @@ const Header = ({ title, navigation }) => {
         onPress={() => navigation.navigate('SearchScreen')}  // Alterado para navigate
         style={styles.backButton}
       >
-        <Icon name="arrow-back" size={24} color="#39FF14" />
+        <Icon name="arrow-back" size={24} color="#F9AD3A" />
       </TouchableOpacity>
       <Text style={styles.title} numberOfLines={1}>{title}</Text>
     </View>

@@ -13,7 +13,7 @@ const CategoryCard = ({ category, onPress }) => {
         />
       ) : (
         <View style={styles.iconContainer}>
-          <Icon name="category" size={30} color="#39FF14" />
+          <Icon name="category" size={30} color="#F9AD3A" />
         </View>
       )}
       <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">
@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#39FF14',
+    backgroundColor: '#F9AD3A',
     borderRadius: 10,
     padding: 10,
     margin: 5,

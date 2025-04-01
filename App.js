@@ -8,6 +8,7 @@ import AddCategoryScreen from './app/screens/AddCategoryScreen';
 import AddProductScreen from './app/screens/AddProductScreen';
 import CategoryProducts from './app/screens/CategoryProducts';
 import SearchScreen from './app/screens/SearchScreen';
+import CartScreen from './app/screens/CartScreen';
 import { createTables } from './services/dbservice';
 import ProductDetail from './app/components/Produto/ProductDetail';
 import HomeContent from './app/components/Home/HomeContent';
@@ -109,6 +110,11 @@ const App = () => {
           name="CategoryProducts"
           component={CategoryProducts}
           options={({ route }) => ({ title: route.params.categoryName })}
+        />
+        <Stack.Screen
+          name="CartScreen"
+          component={CartScreen}
+          options={{ title: 'Meu Carrinho' }}
         />
       </Stack.Navigator>
     </NavigationContainer>
