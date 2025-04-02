@@ -8,8 +8,11 @@ const ProductDetailScreen = ({ navigation, route }) => {
 
     return (
         <View style={styles.container}>
-            <ProductDetail productId={productId} navigation={navigation} />
-            <Footer navigation={navigation} />
+            <ProductDetail 
+                productId={productId} 
+                navigation={navigation} 
+                route={route} 
+            />
         </View>
     );
 }

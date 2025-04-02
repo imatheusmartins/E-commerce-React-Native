@@ -9,25 +9,37 @@ import {
   Alert, 
   ActivityIndicator,
   ScrollView,
-  SafeAreaView
+  SafeAreaView,
+  Dimensions
 } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { getProductById, adicionarItemAoPedido, criarPedido } from '../../../services/dbservice';
 
-const ProductDetail = ({ productId, navigation }) => {
+const { width } = Dimensions.get('window');
+
+const ProductDetail = ({ productId, navigation, route }) => {
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
   const [currentOrderId, setCurrentOrderId] = useState(null);
+  const [isPromo, setIsPromo] = useState(route.params?.isPromo || false);
 
   useEffect(() => {
     let isMounted = true;
 
     const loadData = async () => {
       try {
+        setLoading(true);
+        
         // Carrega o produto
         const productData = await getProductById(productId);
-        if (isMounted) setProduct(productData);
+        if (isMounted) {
+          setProduct(productData);
+          // Se veio da tela de promoções, força mostrar como promoção
+          if (route.params?.fromPromo) {
+            setIsPromo(true);
+          }
+        }
         
         // Cria um novo pedido se não existir um aberto
         const newOrderId = await criarPedido();
@@ -35,6 +47,8 @@ const ProductDetail = ({ productId, navigation }) => {
       } catch (error) {
         console.error('Erro ao carregar dados:', error);
         if (isMounted) Alert.alert('Erro', 'Não foi possível carregar o produto');
+      } finally {
+        if (isMounted) setLoading(false);
       }
     };
 
@@ -52,7 +66,13 @@ const ProductDetail = ({ productId, navigation }) => {
     try {
       await adicionarItemAoPedido(currentOrderId, product.id, quantity);
       Alert.alert('Sucesso', 'Produto adicionado ao carrinho!');
-      navigation.navigate('CartScreen');
+      
+      // Navega de volta para a tela de promoções se veio de lá
+      if (route.params?.fromPromo) {
+        navigation.navigate('SaleScreen');
+      } else {
+        navigation.navigate('CartScreen');
+      }
     } catch (error) {
       console.error('Erro ao adicionar ao carrinho:', error);
       Alert.alert('Erro', 'Não foi possível adicionar ao carrinho');
@@ -88,6 +108,21 @@ const ProductDetail = ({ productId, navigation }) => {
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
       >
+        <View style={styles.header}>
+          <TouchableOpacity 
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+          >
+            <MaterialIcons name="arrow-back" size={24} color="#FF6608" />
+          </TouchableOpacity>
+          
+          {(isPromo || product.em_promocao) && (
+            <View style={styles.promoHeaderTag}>
+              <Text style={styles.promoHeaderText}>PROMOÇÃO</Text>
+            </View>
+          )}
+        </View>
+
         <View style={styles.contentContainer}>
           <Image 
             source={{ uri: product.imagem || 'https://via.placeholder.com/300' }} 
@@ -97,14 +132,18 @@ const ProductDetail = ({ productId, navigation }) => {
           
           <View style={styles.detailsContainer}>
             <Text style={styles.productName}>{product.nome}</Text>
-            <Text style={styles.productPrice}>R$ {product.preco.toFixed(2)}</Text>
-            <Text style={styles.productDescription}>{product.descricao}</Text>
             
-            {product.em_promocao && (
-              <View style={styles.promoBadge}>
-                <Text style={styles.promoText}>PROMOÇÃO</Text>
-              </View>
-            )}
+            <View style={styles.priceContainer}>
+              <Text style={styles.productPrice}>R$ {product.preco.toFixed(2)}</Text>
+              
+              {(isPromo || product.em_promocao) && (
+                <View style={styles.promoTag}>
+                  <Text style={styles.promoTagText}>-30%</Text>
+                </View>
+              )}
+            </View>
+            
+            <Text style={styles.productDescription}>{product.descricao}</Text>
           </View>
           
           <View style={styles.quantityContainer}>
@@ -140,20 +179,12 @@ const ProductDetail = ({ productId, navigation }) => {
             
             <Text style={styles.stockText}>
               {product.estoque > 0 
-                ? `${product.estoque} disponíveis` 
+                ? `${product.estoque} disponíveis em estoque` 
                 : 'Produto esgotado'}
             </Text>
           </View>
 
-          {/* Botões agora fazem parte do conteúdo rolável */}
           <View style={styles.buttonsContainer}>
-            <TouchableOpacity 
-              style={[styles.button, styles.cancelButton]}
-              onPress={() => navigation.goBack()}
-            >
-              <Text style={styles.buttonText}>Cancelar</Text>
-            </TouchableOpacity>
-            
             <TouchableOpacity 
               style={[styles.button, styles.buyButton]}
               onPress={handleAddToCart}
@@ -163,7 +194,7 @@ const ProductDetail = ({ productId, navigation }) => {
                 <ActivityIndicator color="#FFF" />
               ) : (
                 <Text style={styles.buttonText}>
-                  {product.estoque > 0 ? 'Comprar' : 'Esgotado'}
+                  {product.estoque > 0 ? 'ADICIONAR AO CARRINHO' : 'ESGOTADO'}
                 </Text>
               )}
             </TouchableOpacity>
@@ -179,15 +210,33 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#1C1C1C',
   },
-  container: {
-    flex: 1,
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 15,
+    paddingTop: 10,
+  },
+  backButton: {
+    padding: 5,
+  },
+  promoHeaderTag: {
+    backgroundColor: '#FF6608',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+  },
+  promoHeaderText: {
+    color: '#FFF',
+    fontWeight: 'bold',
+    fontSize: 12,
   },
   scrollContainer: {
     flexGrow: 1,
-    paddingBottom: 500, // Espaço extra para o footer
+    paddingBottom: 20,
   },
   contentContainer: {
-    padding: 20,
+    paddingHorizontal: 20,
   },
   loadingContainer: {
     flex: 1,
@@ -198,16 +247,18 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 10,
     color: '#FFF',
+    fontSize: 16,
   },
   productImage: {
-    width: '100%',
-    height: 250,
+    width: width - 40,
+    height: width - 40,
     borderRadius: 10,
     marginBottom: 20,
     backgroundColor: '#333',
+    alignSelf: 'center',
   },
   detailsContainer: {
-    marginBottom: 20,
+    marginBottom: 25,
   },
   productName: {
     fontSize: 24,
@@ -215,36 +266,41 @@ const styles = StyleSheet.create({
     color: '#FFF',
     marginBottom: 10,
   },
+  priceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
   productPrice: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#FF6608',
-    marginBottom: 15,
   },
   productDescription: {
     fontSize: 16,
     color: '#AAA',
-    marginBottom: 15,
     lineHeight: 24,
   },
-  promoBadge: {
-    alignSelf: 'flex-start',
+  promoTag: {
     backgroundColor: '#FF6608',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 5,
-    marginTop: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    marginLeft: 10,
   },
-  promoText: {
+  promoTagText: {
     color: '#FFF',
+    fontSize: 14,
     fontWeight: 'bold',
-    fontSize: 12,
   },
   quantityContainer: {
     marginBottom: 30,
+    backgroundColor: '#252525',
+    borderRadius: 10,
+    padding: 15,
   },
   quantityLabel: {
-    fontSize: 18,
+    fontSize: 16,
     color: '#FFF',
     marginBottom: 10,
   },
@@ -274,28 +330,16 @@ const styles = StyleSheet.create({
   stockText: {
     fontSize: 14,
     color: '#888',
-  },
-  footer: {
-    padding: 20,
-    backgroundColor: '#1C1C1C',
-    borderTopWidth: 1,
-    borderTopColor: '#333',
+    textAlign: 'center',
   },
   buttonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    marginTop: 10,
   },
   button: {
-    flex: 1,
-    padding: 15,
+    padding: 18,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 80,
-  },
-  cancelButton: {
-    backgroundColor: '#333',
-    marginRight: 10,
   },
   buyButton: {
     backgroundColor: '#FF6608',

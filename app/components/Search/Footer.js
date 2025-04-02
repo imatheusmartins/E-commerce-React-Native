@@ -45,7 +45,7 @@ const Footer = ({ navigation }) => {
           {/* Ícone Ofertas */}
           <TouchableOpacity 
             style={styles.iconButton} 
-            onPress={() => navigation.navigate('Offers')}
+            onPress={() => navigation.navigate('OfferScreen')}
           >
             <MaterialCommunityIcons name="sale" size={24} color="#999" />
             <Text style={styles.iconText}>Ofertas</Text>
