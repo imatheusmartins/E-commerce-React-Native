@@ -3,7 +3,7 @@ import * as SQLite from 'expo-sqlite';
 // Conexão melhorada com tratamento de erro
 export async function getDbConnection() {
     try {
-        const db = await SQLite.openDatabaseAsync('dbTeste2.db');
+        const db = await SQLite.openDatabaseAsync('dbEcomm.db');
         return db;
     } catch (error) {
         console.error("Erro ao conectar ao banco de dados:", error);
@@ -144,8 +144,6 @@ export async function obtemTodosProdutos(limit = 50, offset = 0) {
     } catch (error) {
         console.error("Erro ao obter produtos:", error);
         throw error;
-    } finally {
-        if (dbProd) await dbProd.closeAsync();
     }
 }
 
@@ -165,8 +163,6 @@ export async function obtemTodasCategorias() {
     } catch (error) {
         console.error("Erro ao obter categorias:", error);
         throw error;
-    } finally {
-        if (dbProd) await dbProd.closeAsync();
     }
 }
 
@@ -198,9 +194,7 @@ export async function adicionaProduto(produto) {
     } catch (error) {
         console.error("Erro ao adicionar produto:", error);
         throw error;
-    } finally {
-        if (dbCx) await dbCx.closeAsync();
-    }
+    } 
 }
 
 export async function adicionaCategoria(categoria) {
@@ -265,9 +259,7 @@ export async function alteraProduto(produto) {
         if (dbProd) await dbProd.execAsync('ROLLBACK');
         console.error("Erro ao atualizar produto:", error);
         throw error;
-    } finally {
-        if (dbProd) await dbProd.closeAsync();
-    }
+    } 
 }
 
 export async function alteraCategoria(categoria) {
@@ -345,9 +337,7 @@ export async function excluiProduto(id) {
     } catch (error) {
         console.error("Erro ao excluir produto:", error);
         throw error;
-    } finally {
-        if (dbProd) await dbProd.closeAsync();
-    }
+    } 
 }
 
 // Métodos específicos otimizados
