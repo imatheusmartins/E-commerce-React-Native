@@ -8,13 +8,21 @@ import {
   Alert,
   Image,
   ScrollView,
-  KeyboardAvoidingView,
-  Platform
+  FlatList,
+  ActivityIndicator,
+  TouchableWithoutFeedback,
+  Keyboard
 } from 'react-native';
-import CheckBox from 'react-native-check-box';
-import DropDownPicker from 'react-native-dropdown-picker';
+import { MaterialIcons, MaterialCommunityIcons, FontAwesome } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { adicionaProduto, obtemTodasCategorias } from '../../../services/dbservice';
+import {
+  adicionaProduto,
+  obtemTodasCategorias,
+  obtemTodosProdutos,
+  excluiTodosProdutos,
+  alteraProduto,
+  excluiProduto
+} from '../../../services/dbservice';
 
 const CadastroProdutoScreen = ({ navigation }) => {
   const [produto, setProduto] = useState({
@@ -29,12 +37,17 @@ const CadastroProdutoScreen = ({ navigation }) => {
 
   const [categorias, setCategorias] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [categoriaSelecionada, setCategoriaSelecionada] = useState(null);
+  const [editingId, setEditingId] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [dropdownAberto, setDropdownAberto] = useState(false);
+  const [filtroCategoria, setFiltroCategoria] = useState('');
 
   useEffect(() => {
-    const carregarCategorias = async () => {
+    let isMounted = true;
+
+    const loadData = async () => {
       try {
+        setLoading(true);
         const categoriasData = await obtemTodasCategorias();
         // Map categories to include a unique key for DropDownPicker
         console.log(categoriasData);
@@ -44,18 +57,43 @@ const CadastroProdutoScreen = ({ navigation }) => {
           //key: cat.id // Add key for React's rendering
         })));
       } catch (error) {
-        console.error('Erro ao carregar categorias:', error);
-        Alert.alert('Erro', 'Não foi possível carregar as categorias');
+        if (isMounted) Alert.alert('Erro', 'Falha ao carregar dados');
+      } finally {
+        if (isMounted) setLoading(false);
       }
     };
-    carregarCategorias();
+
+    loadData();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
+
+  const carregarDados = async () => {
+    try {
+      setRefreshing(true);
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+      const categoriasData = await obtemTodasCategorias();
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+      const produtosData = await obtemTodosProdutos();
+
+      setCategorias(categoriasData);
+      setProdutos(produtosData);
+    } catch (error) {
+      Alert.alert('Erro', 'Erro ao recarregar dados');
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const selecionarImagem = async () => {
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permissão necessária', 'Precisamos de acesso à sua galeria para selecionar imagens');
+        Alert.alert('Permissão necessária', 'Precisamos de acesso à sua galeria');
         return;
       }
 
@@ -66,18 +104,18 @@ const CadastroProdutoScreen = ({ navigation }) => {
         quality: 1,
       });
 
-      if (!resultado.canceled && resultado.assets && resultado.assets.length > 0) {
+      if (!resultado.canceled && resultado.assets?.[0]?.uri) {
         setProduto({ ...produto, imagem: resultado.assets[0].uri });
       }
     } catch (error) {
-      console.error('Erro ao abrir galeria:', error);
-      Alert.alert('Erro', 'Não foi possível acessar a galeria de imagens');
+      console.error('Erro ao selecionar imagem:', error);
+      Alert.alert('Erro', 'Falha ao acessar a galeria');
     }
   };
 
   const validarDados = () => {
     if (!produto.nome.trim()) {
-      Alert.alert('Atenção', 'O nome do produto é obrigatório');
+      Alert.alert('Atenção', 'Nome do produto é obrigatório');
       return false;
     }
 
@@ -125,12 +163,127 @@ const CadastroProdutoScreen = ({ navigation }) => {
         ]);
       }
     } catch (error) {
-      console.error('Erro ao salvar produto:', error);
-      Alert.alert('Erro', error.message || 'Não foi possível salvar o produto');
+      Alert.alert('Erro', error.message || 'Falha ao salvar');
     } finally {
       setLoading(false);
     }
   };
+
+  const editarProduto = (prod) => {
+    setProduto({
+      nome: prod.nome,
+      descricao: prod.descricao,
+      preco: prod.preco.toString(),
+      estoque: prod.estoque.toString(),
+      imagem: prod.imagem,
+      em_promocao: prod.em_promocao,
+      categoria_id: prod.categoria_id
+    });
+    setEditingId(prod.id);
+  };
+
+  const excluirProduto = async (id) => {
+    Alert.alert(
+      'Confirmar',
+      'Deseja realmente excluir este produto?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await excluiProduto(id);
+              await carregarDados();
+              Alert.alert('Sucesso', 'Produto excluído');
+            } catch (error) {
+              console.error('Erro ao excluir:', error);
+              Alert.alert('Erro', 'Falha ao excluir');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const limparTudo = async () => {
+    Alert.alert(
+      'Confirmar',
+      'Deseja excluir TODOS os produtos?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Excluir Tudo',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await excluiTodosProdutos();
+              await carregarDados();
+              Alert.alert('Sucesso', 'Todos produtos foram excluídos');
+            } catch (error) {
+              console.error('Erro ao excluir tudo:', error);
+              Alert.alert('Erro', 'Falha ao excluir produtos');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const limparFormulario = () => {
+    setProduto({
+      nome: '',
+      descricao: '',
+      preco: '',
+      estoque: '',
+      imagem: null,
+      em_promocao: false,
+      categoria_id: null
+    });
+    setEditingId(null);
+  };
+
+  const renderItem = ({ item }) => (
+    <View style={styles.card}>
+      {item.imagem && (
+        <Image source={{ uri: item.imagem }} style={styles.cardImage} />
+      )}
+
+      <View style={styles.cardContent}>
+        <Text style={styles.cardTitle} numberOfLines={1}>{item.nome}</Text>
+        <Text style={styles.cardPrice}>R$ {item.preco.toFixed(2)}</Text>
+        <Text style={styles.cardCategory}>
+          {categorias.find(c => c.id === item.categoria_id)?.nome || 'Sem categoria'}
+        </Text>
+        {item.em_promocao && (
+          <View style={styles.promoBadge}>
+            <Text style={styles.promoText}>PROMOÇÃO</Text>
+          </View>
+        )}
+      </View>
+
+      <View style={styles.cardActions}>
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={() => editarProduto(item)}
+        >
+          <MaterialIcons name="edit" size={20} color="#F9AD3A" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={() => excluirProduto(item.id)}
+        >
+          <MaterialIcons name="delete" size={20} color="#DB1921" />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  // Filtra categorias baseado no texto de busca
+  const categoriasFiltradas = categorias.filter(categoria =>
+    categoria.nome.toLowerCase().includes(filtroCategoria.toLowerCase())
+  );
 
   return (
     <KeyboardAvoidingView
@@ -257,11 +410,13 @@ const CadastroProdutoScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#1C1C1C',
+  },
   scrollContainer: {
-    flexGrow: 1,
     padding: 20,
-    backgroundColor: '#121212',
-    paddingBottom: 40
+    paddingBottom: 40,
   },
   titulo: {
     fontSize: 22,
@@ -277,48 +432,117 @@ const styles = StyleSheet.create({
     marginTop: 5,
     color: '#000',
     fontSize: 16,
+    marginBottom: 15,
   },
-  descricaoInput: {
+  textArea: {
     height: 100,
     textAlignVertical: 'top',
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 15,
   },
-  inputContainer: {
+  inputGroup: {
     flex: 1,
-  },
-  estoqueInput: {
-    marginLeft: 10,
+    marginHorizontal: 5,
   },
   label: {
     color: '#FFF',
     marginBottom: 5,
     fontSize: 16,
   },
+  imagePicker: {
+    height: 150,
+    backgroundColor: '#333',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 15,
+    overflow: 'hidden',
+  },
+  imagePreview: {
+    width: '100%',
+    height: '100%',
+  },
   checkboxContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 15,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: '#F9AD3A',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  checkboxChecked: {
+    backgroundColor: '#F9AD3A',
   },
   checkboxLabel: {
     color: '#FFF',
     fontSize: 16,
-    marginLeft: 10,
   },
   dropdownContainer: {
-    marginBottom: 15,
-    zIndex: 1000,
+    marginBottom: 20,
+    zIndex: 10,
+  },
+  dropdownHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#333',
+    padding: 15,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#444',
+  },
+  dropdownHeaderText: {
+    color: '#FFF',
+    fontSize: 16,
   },
   dropdownList: {
-    backgroundColor: '#FFF',
-    borderColor: '#CCC',
-    marginTop: 5,
+    position: 'absolute',
+    top: 70,
+    left: 0,
+    right: 0,
+    backgroundColor: '#333',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#444',
+    maxHeight: 200,
+    elevation: 3,
+    zIndex: 100,
   },
-  dropdownText: {
-    color: '#000',
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#222',
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    margin: 10,
+  },
+  searchInput: {
+    flex: 1,
+    color: '#FFF',
+    height: 40,
+  },
+  dropdownScroll: {
+    maxHeight: 150,
+  },
+  dropdownItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#444',
+  },
+  dropdownItemText: {
+    color: '#FFF',
     fontSize: 16,
   },
   uploadContainer: {
@@ -334,6 +558,7 @@ const styles = StyleSheet.create({
     color: '#000',
     fontWeight: 'bold',
     fontSize: 16,
+    marginLeft: 10,
   },
   imagePreview: {
     width: '100%',
@@ -347,7 +572,15 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
-    marginTop: 10,
+  },
+  cardImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    marginRight: 15,
+  },
+  cardContent: {
+    flex: 1,
   },
   disabledButton: {
     backgroundColor: '#555',
