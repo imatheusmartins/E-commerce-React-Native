@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  StyleSheet, 
-  TouchableOpacity, 
-  Alert, 
-  Image, 
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  Image,
   ScrollView,
   KeyboardAvoidingView,
   Platform
@@ -26,7 +26,7 @@ const CadastroProdutoScreen = ({ navigation }) => {
     em_promocao: false,
     categoria_id: null
   });
-  
+
   const [categorias, setCategorias] = useState([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -36,9 +36,12 @@ const CadastroProdutoScreen = ({ navigation }) => {
     const carregarCategorias = async () => {
       try {
         const categoriasData = await obtemTodasCategorias();
-        setCategorias(categoriasData.map(cat => ({ 
-          label: cat.nome, 
-          value: cat.id 
+        // Map categories to include a unique key for DropDownPicker
+        console.log(categoriasData);
+        setCategorias(categoriasData.map(cat => ({
+          label: cat.nome,
+          value: cat._id // MongoDB ObjectId as string
+          //key: cat.id // Add key for React's rendering
         })));
       } catch (error) {
         console.error('Erro ao carregar categorias:', error);
@@ -77,22 +80,22 @@ const CadastroProdutoScreen = ({ navigation }) => {
       Alert.alert('Atenção', 'O nome do produto é obrigatório');
       return false;
     }
-    
+
     if (!produto.preco || isNaN(parseFloat(produto.preco))) {
       Alert.alert('Atenção', 'Preço inválido');
       return false;
     }
-    
+
     if (parseFloat(produto.preco) <= 0) {
       Alert.alert('Atenção', 'O preço deve ser maior que zero');
       return false;
     }
-    
+
     if (!categoriaSelecionada) {
       Alert.alert('Atenção', 'Selecione uma categoria');
       return false;
     }
-    
+
     return true;
   };
 
@@ -106,17 +109,17 @@ const CadastroProdutoScreen = ({ navigation }) => {
         descricao: produto.descricao.trim() || "",
         preco: parseFloat(produto.preco),
         estoque: parseInt(produto.estoque) || 0,
-        imagem: produto.imagem,
+        imagem: produto.imagem, // Note: Consider uploading image to a server
         em_promocao: produto.em_promocao,
-        categoria_id: categoriaSelecionada
+        categoria_id: categoriaSelecionada // MongoDB ObjectId as string
       };
 
       const idProduto = await adicionaProduto(produtoParaSalvar);
-      
+
       if (idProduto) {
         Alert.alert('Sucesso', 'Produto cadastrado com sucesso!', [
-          { 
-            text: "OK", 
+          {
+            text: "OK",
             onPress: () => navigation.goBack()
           }
         ]);
@@ -135,21 +138,21 @@ const CadastroProdutoScreen = ({ navigation }) => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
     >
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={styles.scrollContainer}
         keyboardShouldPersistTaps="handled"
       >
         <Text style={styles.titulo}>Cadastro de Produto</Text>
-        
+
         <TextInput
           style={styles.input}
           placeholder="Nome do Produto*"
           placeholderTextColor="#666"
           value={produto.nome}
-          onChangeText={(text) => setProduto({...produto, nome: text})}
+          onChangeText={(text) => setProduto({ ...produto, nome: text })}
           maxLength={100}
         />
-        
+
         <TextInput
           style={[styles.input, styles.descricaoInput]}
           placeholder="Descrição"
@@ -157,10 +160,10 @@ const CadastroProdutoScreen = ({ navigation }) => {
           multiline
           numberOfLines={4}
           value={produto.descricao}
-          onChangeText={(text) => setProduto({...produto, descricao: text})}
+          onChangeText={(text) => setProduto({ ...produto, descricao: text })}
           maxLength={500}
         />
-        
+
         <View style={styles.row}>
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Preço*</Text>
@@ -170,10 +173,10 @@ const CadastroProdutoScreen = ({ navigation }) => {
               placeholderTextColor="#666"
               keyboardType="decimal-pad"
               value={produto.preco}
-              onChangeText={(text) => setProduto({...produto, preco: text.replace(/[^0-9.]/g, '')})}
+              onChangeText={(text) => setProduto({ ...produto, preco: text.replace(/[^0-9.]/g, '') })}
             />
           </View>
-          
+
           <View style={[styles.inputContainer, styles.estoqueInput]}>
             <Text style={styles.label}>Estoque</Text>
             <TextInput
@@ -182,7 +185,7 @@ const CadastroProdutoScreen = ({ navigation }) => {
               placeholderTextColor="#666"
               keyboardType="numeric"
               value={produto.estoque}
-              onChangeText={(text) => setProduto({...produto, estoque: text.replace(/[^0-9]/g, '')})}
+              onChangeText={(text) => setProduto({ ...produto, estoque: text.replace(/[^0-9]/g, '') })}
             />
           </View>
         </View>
@@ -190,12 +193,12 @@ const CadastroProdutoScreen = ({ navigation }) => {
         <View style={styles.checkboxContainer}>
           <CheckBox
             isChecked={produto.em_promocao}
-            onClick={() => setProduto({...produto, em_promocao: !produto.em_promocao})}
+            onClick={() => setProduto({ ...produto, em_promocao: !produto.em_promocao })}
             checkBoxColor="#F9AD3A"
           />
           <Text style={styles.checkboxLabel}>Produto em promoção?</Text>
         </View>
-        
+
         <View style={styles.dropdownContainer}>
           <Text style={styles.label}>Categoria*</Text>
           <DropDownPicker
@@ -203,7 +206,11 @@ const CadastroProdutoScreen = ({ navigation }) => {
             value={categoriaSelecionada}
             items={categorias}
             setOpen={setOpen}
-            setValue={setCategoriaSelecionada}
+            setValue={(callback) => {
+              const value = callback(categoriaSelecionada);
+              console.log('Categoria selecionada:', value);
+              setCategoriaSelecionada(value);
+            }}
             setItems={setCategorias}
             placeholder="Selecione uma categoria"
             placeholderStyle={{ color: '#666' }}
@@ -211,12 +218,14 @@ const CadastroProdutoScreen = ({ navigation }) => {
             dropDownContainerStyle={styles.dropdownList}
             textStyle={styles.dropdownText}
             listMode="SCROLLVIEW"
+            listItemContainerStyle={{}}
+            listItemLabelStyle={{}}
           />
         </View>
 
         <View style={styles.uploadContainer}>
           <Text style={styles.label}>Imagem do Produto</Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.uploadButton}
             onPress={selecionarImagem}
             disabled={loading}
@@ -224,16 +233,16 @@ const CadastroProdutoScreen = ({ navigation }) => {
             <Text style={styles.uploadText}>Selecionar da Galeria</Text>
           </TouchableOpacity>
         </View>
-        
+
         {produto.imagem && (
-          <Image 
-            source={{ uri: produto.imagem }} 
+          <Image
+            source={{ uri: produto.imagem }}
             style={styles.imagePreview}
             resizeMode="cover"
           />
         )}
-        
-        <TouchableOpacity 
+
+        <TouchableOpacity
           style={[styles.saveButton, loading && styles.disabledButton]}
           onPress={salvarProduto}
           disabled={loading}
@@ -254,17 +263,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#121212',
     paddingBottom: 40
   },
-  titulo: { 
-    fontSize: 22, 
-    fontWeight: 'bold', 
-    color: '#F9AD3A', 
-    marginBottom: 20, 
-    textAlign: 'center' 
+  titulo: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#F9AD3A',
+    marginBottom: 20,
+    textAlign: 'center'
   },
-  input: { 
-    backgroundColor: '#FFF', 
-    borderRadius: 8, 
-    padding: 15, 
+  input: {
+    backgroundColor: '#FFF',
+    borderRadius: 8,
+    padding: 15,
     marginTop: 5,
     color: '#000',
     fontSize: 16,
@@ -273,8 +282,8 @@ const styles = StyleSheet.create({
     height: 100,
     textAlignVertical: 'top',
   },
-  row: { 
-    flexDirection: 'row', 
+  row: {
+    flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 15,
   },
@@ -312,40 +321,40 @@ const styles = StyleSheet.create({
     color: '#000',
     fontSize: 16,
   },
-  uploadContainer: { 
+  uploadContainer: {
     marginBottom: 15,
   },
-  uploadButton: { 
-    backgroundColor: '#F9AD3A', 
-    padding: 15, 
-    borderRadius: 8, 
+  uploadButton: {
+    backgroundColor: '#F9AD3A',
+    padding: 15,
+    borderRadius: 8,
     alignItems: 'center',
   },
-  uploadText: { 
-    color: '#000', 
+  uploadText: {
+    color: '#000',
     fontWeight: 'bold',
     fontSize: 16,
   },
-  imagePreview: { 
-    width: '100%', 
-    height: 200, 
+  imagePreview: {
+    width: '100%',
+    height: 200,
     borderRadius: 8,
-    marginBottom: 20, 
+    marginBottom: 20,
     backgroundColor: '#333',
   },
-  saveButton: { 
-    backgroundColor: '#F9AD3A', 
-    padding: 16, 
-    borderRadius: 8, 
+  saveButton: {
+    backgroundColor: '#F9AD3A',
+    padding: 16,
+    borderRadius: 8,
     alignItems: 'center',
     marginTop: 10,
   },
   disabledButton: {
     backgroundColor: '#555',
   },
-  saveButtonText: { 
-    color: '#000', 
-    fontWeight: 'bold', 
+  saveButtonText: {
+    color: '#000',
+    fontWeight: 'bold',
     fontSize: 18,
   },
 });
