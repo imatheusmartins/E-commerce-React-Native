@@ -12,6 +12,7 @@ import ProductDetail from './app/components/Produto/ProductDetail';
 import HomeContent from './app/components/Home/HomeContent';
 import ProductDetailScreen from './app/screens/ProductDetailScreen';
 import SalesScreen from './app/screens/SalesScreen';
+import OfferScreen from './app/screens/OfferScreen';
 
 const Stack = createStackNavigator();
 
